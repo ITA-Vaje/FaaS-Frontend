@@ -1,6 +1,7 @@
 // src/pages/Login.js
 import { useState } from 'react';
 import { auth } from '../firebase';
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import styles from '../styles/authStyles';
@@ -11,15 +12,15 @@ const Login = () => {
   const navigate = useNavigate();
   const [error, setError] = useState('');
 
-  const handleLogin = async (e) => {
+    const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await auth.signInWithEmailAndPassword(email, password);
-      navigate('/');
+        await signInWithEmailAndPassword(auth, email, password);
+        navigate('/');
     } catch (err) {
-      setError(err.message);
+        setError(err.message);
     }
-  };
+    };
 
   return (
     <div style={styles.container}>

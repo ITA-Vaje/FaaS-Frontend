@@ -1,6 +1,5 @@
 // src/pages/Register.js
 import { useState } from 'react';
-import { auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import styles from '../styles/authStyles';
 
@@ -12,9 +11,23 @@ const Register = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setError('');
+
     try {
-      await auth.createUserWithEmailAndPassword(email, password);
-      navigate('/');
+      const res = await fetch('http://127.0.0.1:5001/faas-ita/us-central1/registerUser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      // If successful, redirect to login or home
+      navigate('/login');
     } catch (err) {
       setError(err.message);
     }
@@ -40,6 +53,9 @@ const Register = () => {
           onChange={(e) => setPassword(e.target.value)}
         />
         <button type="submit" style={styles.button}>Register</button>
+        <p style={{ marginTop: '1rem' }}>
+          Already have an account? <a href="/login">Login</a>
+        </p>
       </form>
     </div>
   );

@@ -1,10 +1,10 @@
-// src/components/Navbar.js
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
 import { useEffect, useState } from 'react';
 
 const Navbar = () => {
   const [user, setUser] = useState(null);
+  const navigate = useNavigate(); // <-- Add this line
 
   useEffect(() => {
     return auth.onAuthStateChanged((u) => setUser(u));
@@ -12,6 +12,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     await auth.signOut();
+    navigate('/login'); // <-- Redirect after logout
   };
 
   return (
