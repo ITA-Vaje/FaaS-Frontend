@@ -16,6 +16,9 @@ const Login = () => {
     e.preventDefault();
     try {
         await signInWithEmailAndPassword(auth, email, password);
+        const token = await auth.currentUser.getIdToken(true);
+        console.log("Your Firebase ID Token (Bearer):", token);
+        
         navigate('/');
     } catch (err) {
         setError(err.message);

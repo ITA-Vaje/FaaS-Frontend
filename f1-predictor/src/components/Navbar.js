@@ -1,18 +1,27 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { auth } from '../firebase';
 import { useEffect, useState } from 'react';
+import { auth } from '../firebase';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [user, setUser] = useState(null);
-  const navigate = useNavigate(); // <-- Add this line
+  const [isAdmin, setIsAdmin] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    return auth.onAuthStateChanged((u) => setUser(u));
+    const unsubscribe = auth.onAuthStateChanged(async (u) => {
+      setUser(u);
+      if (u) {
+        const tokenResult = await u.getIdTokenResult();
+        setIsAdmin(tokenResult.claims.admin === true);
+        console.log("Is admin?", tokenResult.claims.admin === true);
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleLogout = async () => {
     await auth.signOut();
-    navigate('/login'); // <-- Redirect after logout
+    navigate('/login');
   };
 
   return (
@@ -22,6 +31,12 @@ const Navbar = () => {
         <Link to="/" style={styles.link}>Home</Link>
         <Link to="/submit" style={styles.link}>Predict</Link>
         <Link to="/leaderboard" style={styles.link}>Leaderboard</Link>
+        {isAdmin && (
+          <>
+            <Link to="/add-race" style={styles.link}>Edit Races</Link>
+            <Link to="/add-results" style={styles.link}>Edit Results</Link>
+          </>
+        )}
         {user ? (
           <>
             <span style={styles.user}>{user.email}</span>
