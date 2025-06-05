@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from '../styles/authStyles';
 
 const Register = () => {
+  const [username, setUsername] = useState(''); // New username state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const Register = () => {
       const res = await fetch('http://127.0.0.1:5001/faas-ita/us-central1/registerUser', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, email, password }), // Include username
       });
 
       const data = await res.json();
@@ -26,7 +27,6 @@ const Register = () => {
         throw new Error(data.error || 'Registration failed');
       }
 
-      // If successful, redirect to login or home
       navigate('/login');
     } catch (err) {
       setError(err.message);
@@ -38,6 +38,15 @@ const Register = () => {
       <form onSubmit={handleRegister} style={styles.form}>
         <h2 style={styles.title}>Register</h2>
         {error && <p style={styles.error}>{error}</p>}
+        
+        <input
+          type="text"
+          placeholder="Username"
+          style={styles.input}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+
         <input
           type="email"
           placeholder="Email"
@@ -45,6 +54,7 @@ const Register = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
+
         <input
           type="password"
           placeholder="Password"
@@ -52,6 +62,7 @@ const Register = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+
         <button type="submit" style={styles.button}>Register</button>
         <p style={{ marginTop: '1rem' }}>
           Already have an account? <a href="/login">Login</a>
