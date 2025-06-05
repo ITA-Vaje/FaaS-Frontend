@@ -7,6 +7,7 @@ import SubmitPrediction from './pages/SubmitPrediction';
 import Leaderboard from './pages/Leaderboard';
 import AddRace from './pages/AddRace';
 import AdminSubmitResults from './pages/AdminSubmitResults';
+import AddDriver from './pages/AddDriver';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/add-race" element={<AddRace />} />
         <Route path="/add-results" element={<AdminSubmitResults />} />
+        <Route path="/add-driver" element={<AddDriver />} />
       </Routes>
     </Router>
   );

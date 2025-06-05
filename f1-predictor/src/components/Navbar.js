@@ -35,6 +35,7 @@ const Navbar = () => {
           <>
             <Link to="/add-race" style={styles.link}>Edit Races</Link>
             <Link to="/add-results" style={styles.link}>Edit Results</Link>
+            <Link to="/add-driver" style={styles.link}>Edit Drivers</Link>
           </>
         )}
         {user ? (
