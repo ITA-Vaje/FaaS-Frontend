@@ -7,39 +7,38 @@ const SubmitPrediction = () => {
   const [races, setRaces] = useState([]);
   const [prediction, setPrediction] = useState({ p1: '', p2: '', p3: '' });
   const [status, setStatus] = useState('');
+  const [drivers, setDrivers] = useState([]);
+
 
   useEffect(() => {
-    // Listen to auth state changes
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
+        const token = await user.getIdToken();
+
         try {
-          const token = await user.getIdToken();
+          const [racesRes, driversRes] = await Promise.all([
+            fetch('http://localhost:5001/faas-ita/us-central1/getRaces', {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            fetch('http://localhost:5001/faas-ita/us-central1/getDrivers', {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+          ]);
 
-          const res = await fetch(
-            'http://localhost:5001/faas-ita/us-central1/getRaces',
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+          const racesData = await racesRes.json();
+          const driversData = await driversRes.json();
 
-          const data = await res.json();
-          if (res.ok) {
-            setRaces(data.races || []); // <-- fix: data.races instead of data
-          } else {
-            console.error(data.error || 'Failed to fetch races');
-          }
+          if (racesRes.ok) setRaces(racesData.races || []);
+          if (driversRes.ok) setDrivers(driversData.drivers || []);
         } catch (err) {
-          console.error('Error fetching races:', err);
+          console.error('Error fetching data:', err);
         }
       } else {
-        // No user logged in
         setRaces([]);
+        setDrivers([]);
       }
     });
 
-    // Cleanup listener on unmount
     return () => unsubscribe();
   }, []);
 
@@ -100,24 +99,45 @@ const SubmitPrediction = () => {
 
       </select>
 
-      <input
-        placeholder="P1 Driver"
+      <select
         value={prediction.p1}
         onChange={(e) => setPrediction({ ...prediction, p1: e.target.value })}
         style={submitStyles.input}
-      />
-      <input
-        placeholder="P2 Driver"
+      >
+        <option value="">Select P1 Driver</option>
+        {drivers.map((d) => (
+          <option key={d.id} value={d.id}>
+            {d.name} ({d.team})
+          </option>
+        ))}
+      </select>
+
+      <select
         value={prediction.p2}
         onChange={(e) => setPrediction({ ...prediction, p2: e.target.value })}
         style={submitStyles.input}
-      />
-      <input
-        placeholder="P3 Driver"
+      >
+        <option value="">Select P2 Driver</option>
+        {drivers.map((d) => (
+          <option key={d.id} value={d.id}>
+            {d.name} ({d.team})
+          </option> 
+        ))}
+      </select>
+
+      <select
         value={prediction.p3}
         onChange={(e) => setPrediction({ ...prediction, p3: e.target.value })}
         style={submitStyles.input}
-      />
+      >
+        <option value="">Select P3 Driver</option>
+        {drivers.map((d) => (
+          <option key={d.id} value={d.id}>
+            {d.name} ({d.team})
+          </option>
+        ))}
+      </select>
+
 
       <button onClick={handleSubmit} style={submitStyles.button}>
         Submit Prediction
