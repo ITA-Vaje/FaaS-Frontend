@@ -2,14 +2,13 @@ import { useState, useEffect } from 'react';
 import { auth } from '../firebase';
 import submitStyles from '../styles/SubmitPredictionStyles';
 
-const SubmitPrediction = () => {
-  const [raceId, setRaceId] = useState('');
+const AdminSubmitResults = () => {
   const [races, setRaces] = useState([]);
-  const [prediction, setPrediction] = useState({ p1: '', p2: '', p3: '' });
+  const [raceId, setRaceId] = useState('');
+  const [results, setResults] = useState({ p1: '', p2: '', p3: '' });
   const [status, setStatus] = useState('');
 
   useEffect(() => {
-    // Listen to auth state changes
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         try {
@@ -26,20 +25,16 @@ const SubmitPrediction = () => {
 
           const data = await res.json();
           if (res.ok) {
-            setRaces(data.races || []); // <-- fix: data.races instead of data
+            setRaces(data.races || []);
           } else {
             console.error(data.error || 'Failed to fetch races');
           }
         } catch (err) {
           console.error('Error fetching races:', err);
         }
-      } else {
-        // No user logged in
-        setRaces([]);
       }
     });
 
-    // Cleanup listener on unmount
     return () => unsubscribe();
   }, []);
 
@@ -47,26 +42,25 @@ const SubmitPrediction = () => {
     try {
       const user = auth.currentUser;
       if (!user) throw new Error('Not authenticated');
-
       const idToken = await user.getIdToken();
 
       const res = await fetch(
-        'http://localhost:5001/faas-ita/us-central1/submitPrediction',
+        'http://localhost:5001/faas-ita/us-central1/updateRaceResult',
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${idToken}`,
           },
-          body: JSON.stringify({ raceId, prediction }),
+          body: JSON.stringify({ raceId, results }),
         }
       );
 
       const data = await res.json();
       if (res.ok) {
-        setStatus('✅ Prediction submitted!');
+        setStatus('✅ Race results submitted!');
       } else {
-        setStatus(`❌ ${data.error || 'Error submitting prediction'}`);
+        setStatus(`❌ ${data.error || 'Error submitting results'}`);
       }
     } catch (err) {
       setStatus(`❌ ${err.message}`);
@@ -75,9 +69,8 @@ const SubmitPrediction = () => {
 
   return (
     <div style={submitStyles.container}>
-      <h2 style={submitStyles.heading}>Submit Your Race Prediction</h2>
+      <h2 style={submitStyles.heading}>Submit Race Results</h2>
 
-      {/* Dropdown for race selection */}
       <select
         value={raceId}
         onChange={(e) => setRaceId(e.target.value)}
@@ -85,8 +78,6 @@ const SubmitPrediction = () => {
       >
         <option value="">Select a race</option>
         {races.map((race) => {
-          console.log('raceDate raw:', race.raceDate);
-
           const date = race.raceDate && typeof race.raceDate._seconds === 'number'
             ? new Date(race.raceDate._seconds * 1000)
             : new Date(race.raceDate);
@@ -97,30 +88,29 @@ const SubmitPrediction = () => {
             </option>
           );
         })}
-
       </select>
 
       <input
         placeholder="P1 Driver"
-        value={prediction.p1}
-        onChange={(e) => setPrediction({ ...prediction, p1: e.target.value })}
+        value={results.p1}
+        onChange={(e) => setResults({ ...results, p1: e.target.value })}
         style={submitStyles.input}
       />
       <input
         placeholder="P2 Driver"
-        value={prediction.p2}
-        onChange={(e) => setPrediction({ ...prediction, p2: e.target.value })}
+        value={results.p2}
+        onChange={(e) => setResults({ ...results, p2: e.target.value })}
         style={submitStyles.input}
       />
       <input
         placeholder="P3 Driver"
-        value={prediction.p3}
-        onChange={(e) => setPrediction({ ...prediction, p3: e.target.value })}
+        value={results.p3}
+        onChange={(e) => setResults({ ...results, p3: e.target.value })}
         style={submitStyles.input}
       />
 
       <button onClick={handleSubmit} style={submitStyles.button}>
-        Submit Prediction
+        Submit Results
       </button>
 
       {status && <p style={submitStyles.status}>{status}</p>}
@@ -128,4 +118,4 @@ const SubmitPrediction = () => {
   );
 };
 
-export default SubmitPrediction;
+export default AdminSubmitResults;
